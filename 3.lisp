@@ -42,5 +42,19 @@
 	  (mapcar (lambda (x) (ppcre:scan-to-strings ":.*?\\|" x)) (ppcre:all-matches-as-strings "\\[File.*?\\]" text))))
 
 ;; 25
+(ql:quickload :split-sequence)
+(use-package :split-sequence)
+
 (defun get-info (text)
-  (ppcre:scan-to-strings "{{基礎情報.*}}" text ))
+  (flet ((strip-field-line (x)
+	   (subseq x 0 (1- (length x))))
+	 (remove-bracket (x)
+	   (subseq x 2 (- (length x) 2))))
+    (let ((template (ppcre:scan-to-strings "{{基礎情報(.*\\n)*}}" text)))
+      (mapcar (lambda (x)
+		(when x
+		  (let* ((field-line (split-sequence #\= (subseq (print (strip-field-line x)) 1)))
+			 (field-name (remove #\space (first field-line)))
+			 (field-val (remove #\space (second field-line))))
+		    (cons field-name field-val))))
+	      (ppcre:all-matches-as-strings "\\|.* = ([^=]*\\n)*" (remove-bracket template))))))
