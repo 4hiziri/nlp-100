@@ -50,11 +50,20 @@
 	   (subseq x 0 (1- (length x))))
 	 (remove-bracket (x)
 	   (subseq x 2 (- (length x) 2))))
-    (let ((template (ppcre:scan-to-strings "{{基礎情報(.*\\n)*}}" text)))
+    (let ((template (ppcre:scan-to-strings "{{基礎情報(.*\\n)*}}" text)))     
       (mapcar (lambda (x)
 		(when x
-		  (let* ((field-line (split-sequence #\= (subseq (print (strip-field-line x)) 1)))
+		  (let* ((field-line (split-sequence #\= (subseq (strip-field-line x) 1)))
 			 (field-name (remove #\space (first field-line)))
 			 (field-val (remove #\space (second field-line))))
 		    (cons field-name field-val))))
-	      (ppcre:all-matches-as-strings "\\|.* = ([^=]*\\n)*" (remove-bracket template))))))
+	      (ppcre:all-matches-as-strings "\\|.* = ((?!.*<ref).*\\n|.*<ref[\\s\\S]*?( />|</ref>)\\n)" (remove-bracket template))))))
+
+;; 26
+(defun remove-emphasis (text)
+  (ppcre:regex-replace-all "''{1,2}" text ""))
+
+(defun solve (text)
+  (mapcar (lambda (x) (cons (car x)
+			    (remove-emphasis (cdr x))))
+	  (get-info text)))
