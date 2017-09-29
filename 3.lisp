@@ -67,3 +67,19 @@
   (mapcar (lambda (x) (cons (car x)
 			    (remove-emphasis (cdr x))))
 	  (get-info text)))
+
+;; 27
+(defun remove-inner-link (text)
+  (ppcre:regex-replace-all "\\]\\]"
+			   (ppcre:regex-replace-all "\\[\\[" text "")
+			   ""))
+
+(defun solve (text)
+  (mapcar (lambda (x) (cons (car x)
+			    (remove-inner-link (remove-emphasis (cdr x)))))
+	  (get-info text)))
+
+;; 28
+;; i duno meida wiki
+;; 29
+;; or api
