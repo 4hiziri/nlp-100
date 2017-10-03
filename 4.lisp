@@ -3,7 +3,7 @@
 (use-package :split-sequence)
 
 
-;; ((surface . "生れ") (base . "生れる") (pos . "動詞") (pos1 . "連用形"))
+;; ((surface . "生れ") (base . "生れる") (pos . "動詞") (pos1 . "連用形"))n
 (defun read-mecab (file)  
   (labels ((parse-morpheme (line)
 	     (let* ((morpheme-analysis (split-sequence #\tab line))		    
