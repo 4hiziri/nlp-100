@@ -76,8 +76,54 @@
 
 ;; 35
 (defun find-longest-nouns (sentence)
-  (labels ((inner-loop (rest tmp acc))))
-  (let ((series nil)
-	(tmp nil))
-    (dolist (word sentence)
-      (if ))))
+  (flet ((inner-remove-nil-and-one-element (list)
+	   (remove-if (lambda (x) (or (= (length x) 0)
+				      (= (length x) 1)))
+		      list)))
+    (let ((series nil)
+	  (tmp nil))
+      (dolist (word sentence (inner-remove-nil-and-one-element (reverse series)))
+	(if (string= (assoc-val 'pos word)
+		     "名詞")
+	    (push word tmp)
+	    (progn (push (reverse tmp) series)
+		   (setf tmp nil)))))))
+
+(defun connect-surface (list)
+  (reduce (lambda (x y) (concatenate 'string x y))
+	  (mapcar (lambda (x) (assoc-val 'surface x)) list)))
+
+(setf connected-nouns (mapcar (lambda (sentence)
+				(mapcar #'connect-surface sentence))
+			      (remove nil (mapcar #'find-longest-nouns mecab))))
+
+;; 36
+;; make-hash
+(defun count-freq-words (mecab-list)
+  (flet ((inner-word-base (list)
+	   (apply #'append (mapcar (lambda (sentense)
+				     (mapcar (lambda (word)
+					       (assoc-val 'base word)) sentense))
+				   list))))
+    (let ((count (make-hash-table :test #'equal)))
+      (dolist (word (inner-word-base mecab-list) count)
+	(if (gethash word count)
+	    (incf (gethash word count))
+	    (setf (gethash word count) 1))))))
+
+(defun hash-alist (table)
+  (let ((ret-alist nil))
+    (maphash (lambda (k e)
+	       (push (cons k e) ret-alist))
+	     table)
+    ret-alist))
+
+(setf freq-sorted (sort (hash-alist (count-freq-words mecab))
+			(lambda (x y) (> (cdr x) (cdr y)))))
+
+;; 37
+(defun print-top-10 (freq-alist)
+  (dolist (word-freq (subseq freq-alist 0 10))
+    (format t "~A: ~A" (cdr word-freq) (car word-freq))
+    (fresh-line)))
+
