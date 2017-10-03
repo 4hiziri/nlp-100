@@ -99,11 +99,12 @@
 
 ;; 36
 ;; make-hash
-(defun count-freq-words (mecab-list)
+(defun count-freq-base-words (mecab-list)
   (flet ((inner-word-base (list)
 	   (apply #'append (mapcar (lambda (sentense)
 				     (mapcar (lambda (word)
-					       (assoc-val 'base word)) sentense))
+					       (assoc-val 'base word))
+					     sentense))
 				   list))))
     (let ((count (make-hash-table :test #'equal)))
       (dolist (word (inner-word-base mecab-list) count)
@@ -118,8 +119,11 @@
 	     table)
     ret-alist))
 
-(setf freq-sorted (sort (hash-alist (count-freq-words mecab))
-			(lambda (x y) (> (cdr x) (cdr y)))))
+(defun sort-freq-alist (freq-alist)
+  (sort freq-alist
+	(lambda (x y) (> (cdr x) (cdr y)))))
+
+(setf freq-sorted (sort-freq-alist(hash-alist (count-freq-base-words mecab))))
 
 ;; 37
 (defun print-top-10 (freq-alist)
@@ -127,3 +131,35 @@
     (format t "~A: ~A" (cdr word-freq) (car word-freq))
     (fresh-line)))
 
+;; set autoscale y
+;; plot "data.dat" using 0:2:xtic(1) with boxes notitle
+
+(defun print-gnuplot-histgram (mecab-list num)
+  (let ((freq-alist (sort-freq-alist (hash-alist (count-freq-words mecab-list)))))
+    (dolist (pair (subseq freq-alist 0 num))
+      (format t "~A ~A~%" (car pair) (cdr pair)))))
+
+;; 38
+;; 種類数?
+(defun count-freq-words (mecab-list)
+  (let ((words-list (apply #'append mecab-list))
+	(count (make-hash-table :test #'equalp)))
+      (dolist (word words-list count)
+	(if (gethash word count)
+	    (incf (gethash word count))
+	    (setf (gethash word count) 1)))))
+
+;; 39
+(defun rule-of-zipf (mecab-list)
+  (let ((alist (sort-freq-alist (hash-alist (count-freq-base-words mecab-list)))))
+    (loop for i from 1
+	  for pair in alist
+	  do
+	  (format t "~A ~A~%" i (cdr pair)))))
+
+(defun write-to-file (file mecab-list)
+  (with-open-file (out file
+		       :direction :output
+		       :if-exists :supersede)
+    (let ((*standard-output* out))
+      (rule-of-zipf mecab-list))))
