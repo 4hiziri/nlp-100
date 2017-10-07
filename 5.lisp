@@ -49,3 +49,6 @@
 		(push morpheme temp-sentence)
 		(progn (push (reverse temp-sentence) list-sentences)
 		       (setf temp-sentence nil)))))))))
+(defparameter *mecab-list* (read-mecab "resource/neko.txt.mecab"))
+;; I can't install cabocha! X(
+;; 41
