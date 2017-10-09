@@ -46,4 +46,7 @@
 (defparameter *words* (mapcar #'split-to-word *sentences*))
 
 ;; 52
+;; I can't find lisp implementation.
+
+;; 53
 
